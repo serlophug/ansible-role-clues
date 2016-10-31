@@ -1,0 +1,48 @@
+- set_fact: SLURM_CONF="/etc/slurm-llnl/slurm.conf" SLURM_SERVICE="slurm-llnl"
+  when: ansible_os_family == "Debian"
+- set_fact: SLURM_CONF="/etc/slurm/slurm.conf" SLURM_SERVICE="slurm"
+  when: ansible_os_family == "RedHat"
+  
+- lineinfile: dest={{SLURM_CONF}} regexp='NodeName=' line='NodeName={{vnode_prefix}}[1-{{ec3_max_instances|int}}] CPUs=1 State=UNKNOWN'
+- lineinfile: dest={{SLURM_CONF}} regexp='PartitionName=' line='PartitionName=debug Nodes={{vnode_prefix}}[1-{{ec3_max_instances|int}}] Default=YES MaxTime=INFINITE State=UP'
+
+- service: name={{SLURM_SERVICE}} state=started
+- shell: scontrol reconfig
+
+- ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.slurm
+  notify: restart cluesd
+- copy: src=/etc/clues2/conf.d/plugin-slurm.cfg-example dest=/etc/clues2/conf.d/plugin-slurm.cfg force=no
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option=SLURM_SERVER value=slurmserver
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option=SLURM_PARTITION_COMMAND value="{{item}} -o show partitions"
+  with_first_found:
+   - /usr/bin/scontrol
+   - /usr/local/bin/scontrol
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option=SLURM_NODES_COMMAND value="{{item}} -o show nodes"
+  with_first_found:
+   - /usr/bin/scontrol
+   - /usr/local/bin/scontrol
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option=SLURM_JOBS_COMMAND value="{{item}} -o show jobs"
+  with_first_found:
+   - /usr/bin/scontrol
+   - /usr/local/bin/scontrol
+  notify: restart cluesd
+
+- copy: src={{ item }} dest=/usr/local/bin/sbatch.o mode=755
+  with_first_found:
+   - /usr/bin/sbatch
+   - /usr/local/bin/sbatch
+
+- copy: src=/usr/local/bin/clues-slurm-wrapper dest={{ item }}
+  with_first_found:
+   - /usr/bin/sbatch
+   - /usr/local/bin/sbatch
+  when: ansible_os_family == "Debian"
+- copy: src=/usr/bin/clues-slurm-wrapper dest={{ item }}
+  with_first_found:
+   - /usr/bin/sbatch
+   - /usr/local/bin/sbatch
+  when: ansible_os_family == "RedHat"

@@ -1,0 +1,97 @@
+# CLUES2 requirements
+- name: Apt install CLUES2 requirements in Deb system
+  apt: pkg=python-sqlite,unzip
+  when: ansible_os_family == "Debian"
+
+- name: Install epel
+  yum: pkg=epel-release
+  when: ansible_os_family == "RedHat"
+
+- name: Yum install CLUES2 requirements in RH system
+  yum: pkg=python-sqlite3dbm,unzip
+  when: ansible_os_family == "RedHat"
+
+- name: Install CLUES2 pip requirements
+  pip: name={{item}}
+  with_items:
+  - web.py
+  - ply
+
+# Get CLUES2 and dependencies
+- name: Retrieving CLUES2 and cpyutils from github
+  get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
+  register: result
+  until: result|success
+  retries: 5
+  delay: 1
+  with_items:
+  - clues
+  - cpyutils
+
+# Unarchive CLUES2 and dependencies
+- name: Unarchiving CLUES2 and cpyutils
+  unarchive: src=/tmp/{{item}}.zip dest=/tmp copy=no creates=/tmp/{{item}}-master
+  with_items:
+  - clues
+  - cpyutils
+
+# CLUES2 installation
+- name: Installing cpyutils
+  command: python setup.py install chdir=/tmp/cpyutils-master
+- name: Installing CLUES2
+  command: python setup.py install chdir=/tmp/clues-master creates=/usr/local/bin/cluesserver
+
+# CLUES2 configuration
+# /etc/hosts configuration
+- name: Configuring CLUES2
+  shell: |
+    for i in `seq 1 {{ec3_max_instances}}`; do
+      item="{{vnode_prefix}}${i}";
+      grep -q "\<${item}\>" /etc/hosts || echo "127.0.0.1 ${item}.localdomain ${item}" >> /etc/hosts;
+    done
+
+# CLUES2 Config file
+- file: path=/etc/clues2 state=directory mode=755
+
+- copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
+  notify: restart cluesd
+
+- ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
+  with_items:
+    - { section: 'general', option: 'POWERMANAGER_CLASS', value: 'cluesplugins.im' }
+    - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
+    - { section: 'scheduling', option: 'RECONSIDER_JOB_TIME', value: '120' }
+    - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '3000' }
+    - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
+    - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
+    - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '2' }
+    - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+    - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+    - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
+  notify: restart cluesd
+
+# CLUES IM configuration
+- file: path=/usr/local/ec3 state=directory mode=755
+
+# CLUES LRMS configuration
+- name: Configuring the elastic cluster to use Torque LRMS
+  include: torque.yml
+  when: clues_queue_system == "torque"
+
+- name: Configuring the elastic cluster to use SGE LRMS
+  include: sge.yml
+  when: clues_queue_system == "sge"
+
+- name: Configuring the elastic cluster to use SLURM LRMS
+  include: slurm.yml
+  when: clues_queue_system == "slurm"
+
+- name: Configuring the elastic cluster to use Mesos LRMS
+  include: mesos.yml
+  when: clues_queue_system == "mesos"
+
+- name: Configuring the elastic cluster to use HTCondor LRMS
+  include: htcondor.yml
+  when: clues_queue_system == "condor"
+
+- service: name=cluesd state=started  
