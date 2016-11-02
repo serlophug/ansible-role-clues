@@ -131,4 +131,4 @@
   include: htcondor.yml
   when: clues_queue_system == "condor"
 
-- shell: service cluesd stop; service cluesd start
+- service: name=cluesd state=started
