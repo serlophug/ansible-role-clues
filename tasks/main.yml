@@ -74,25 +74,31 @@
   notify: restart cluesd
 
 # CLUES2 IM plugin Config file
-- file: path=/usr/local/ec3 state=directory
+- name: Create EC3 directory
+  file: path=/usr/local/ec3 state=directory
+
 - name: Create auth file
   copy:
     dest: /usr/local/ec3/auth.dat
     content: "{{auth}}"
     force: no
+
 - name: Create extract proxy file
   copy:
     dest: /tmp/extract_proxy.py
     content: "{{extract_proxy_file}}"
     mode: 0755
     force: no
+
 - name: Extract proxy information
   command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
   ignore_errors: yes
   run_once: true
+
 - name: Create IM plugin configuration file for CLUES2
   copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
   notify: restart cluesd
+
 - name: Set IM plugin configuration file values
   ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
   with_items:
