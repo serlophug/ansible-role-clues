@@ -6,3 +6,5 @@ clues_queue_system: slurm
 ec3_max_instances: 5
 # Prefix applied to the elastic cluster worker nodes
 vnode_prefix: wn
+auth: auth.dat
+extract_proxy_file: extract_proxy.py
