@@ -70,6 +70,27 @@
     - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
   notify: restart cluesd
 
+# CLUES2 IM plugin Config file
+- file: path=/usr/local/ec3 state=directory
+- copy:
+    dest: /usr/local/ec3/auth.dat
+    content: "{{auth}}"
+    force: no
+- copy:
+    dest: /tmp/extract_proxy.py
+    content: "{{extract_proxy_file}}"
+    mode: 0755
+    force: no
+- command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
+  ignore_errors: yes
+  run_once: true
+- copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option=IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE value=/usr/local/ec3/auth.dat
+  notify: restart cluesd
+- ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option=IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS value=300
+  notify: restart cluesd
+
 # CLUES IM configuration
 - file: path=/usr/local/ec3 state=directory mode=755
 
@@ -94,4 +115,4 @@
   include: htcondor.yml
   when: clues_queue_system == "condor"
 
-- service: name=cluesd state=started  
+- service: name=cluesd state=started
