@@ -51,12 +51,15 @@
     done
 
 # CLUES2 Config file
-- file: path=/etc/clues2 state=directory mode=755
+- name: Set CLUES2 folder rights
+  file: path=/etc/clues2 state=directory mode=755
 
-- copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
+- name: Create CLUES2 config file
+  copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
   notify: restart cluesd
 
-- ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
+- name: Set CLUES2 config file values
+  ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
   with_items:
     - { section: 'general', option: 'POWERMANAGER_CLASS', value: 'cluesplugins.im' }
     - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
@@ -72,27 +75,34 @@
 
 # CLUES2 IM plugin Config file
 - file: path=/usr/local/ec3 state=directory
-- copy:
+- name: Create auth file
+  copy:
     dest: /usr/local/ec3/auth.dat
     content: "{{auth}}"
     force: no
-- copy:
+- name: Create extract proxy file
+  copy:
     dest: /tmp/extract_proxy.py
     content: "{{extract_proxy_file}}"
     mode: 0755
     force: no
-- command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
+- name: Extract proxy information
+  command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
   ignore_errors: yes
   run_once: true
-- copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
+- name: Create IM plugin configuration file for CLUES2
+  copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
   notify: restart cluesd
-- ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option=IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE value=/usr/local/ec3/auth.dat
-  notify: restart cluesd
-- ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option=IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS value=300
+- name: Set IM plugin configuration file values
+  ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
+  with_items:
+    - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
+    - { option: 'IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS', value: '300' }
   notify: restart cluesd
 
 # CLUES IM configuration
-- file: path=/usr/local/ec3 state=directory mode=755
+- name: Set EC3 folder rights
+  file: path=/usr/local/ec3 state=directory mode=755
 
 # CLUES LRMS configuration
 - name: Configuring the elastic cluster to use Torque LRMS
