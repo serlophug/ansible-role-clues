@@ -1,6 +1,6 @@
 # CLUES2 requirements
 - name: Apt install CLUES2 requirements in Deb system
-  apt: pkg=python-sqlite,unzip
+  apt: pkg=python-sqlite,unzip,python-pip update_cache=yes
   when: ansible_os_family == "Debian"
 
 - name: Install epel
@@ -8,7 +8,7 @@
   when: ansible_os_family == "RedHat"
 
 - name: Yum install CLUES2 requirements in RH system
-  yum: pkg=python-sqlite3dbm,unzip
+  yum: pkg=python-sqlite3dbm,unzip,python-pip update_cache=yes
   when: ansible_os_family == "RedHat"
 
 - name: Install CLUES2 pip requirements
