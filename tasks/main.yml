@@ -1,137 +1,106 @@
-# CLUES2 requirements
-- name: Apt install CLUES2 requirements in Deb system
-  apt: pkg=python-sqlite,unzip,python-pip update_cache=yes
-  when: ansible_os_family == "Debian"
+---
+  - name: Include "{{ansible_os_family}}" CLUES2 requirements
+    include: "{{ansible_os_family}}.yml"
 
-- name: Install epel
-  yum: pkg=epel-release
-  when: ansible_os_family == "RedHat"
+  - name: Install CLUES2 pip requirements
+    pip: name={{item}}
+    with_items:
+    - web.py
+    - ply
 
-- name: Yum install CLUES2 requirements in RH system
-  yum: pkg=python-sqlite3dbm,unzip,python-pip update_cache=yes
-  when: ansible_os_family == "RedHat"
+  # Get CLUES2 and dependencies
+  - name: Retrieving CLUES2 and cpyutils from github
+    get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
+    register: result
+    until: result|success
+    retries: 5
+    delay: 1
+    with_items:
+    - clues
+    - cpyutils
 
-- name: Install CLUES2 pip requirements
-  pip: name={{item}}
-  with_items:
-  - web.py
-  - ply
+  # Unarchive CLUES2 and dependencies
+  - name: Unarchiving CLUES2 and cpyutils
+    unarchive: src=/tmp/{{item}}.zip dest=/tmp copy=no creates=/tmp/{{item}}-master
+    with_items:
+    - clues
+    - cpyutils
 
-# Get CLUES2 and dependencies
-- name: Retrieving CLUES2 and cpyutils from github
-  get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
-  register: result
-  until: result|success
-  retries: 5
-  delay: 1
-  with_items:
-  - clues
-  - cpyutils
+  # CLUES2 installation
+  - name: Installing cpyutils
+    command: python setup.py install chdir=/tmp/cpyutils-master
+  - name: Installing CLUES2
+    command: python setup.py install chdir=/tmp/clues-master creates=/usr/local/bin/cluesserver
 
-# Unarchive CLUES2 and dependencies
-- name: Unarchiving CLUES2 and cpyutils
-  unarchive: src=/tmp/{{item}}.zip dest=/tmp copy=no creates=/tmp/{{item}}-master
-  with_items:
-  - clues
-  - cpyutils
+  # CLUES2 configuration
+  # /etc/hosts configuration
+  - name: Configuring CLUES2
+    shell: |
+      for i in `seq 1 {{ec3_max_instances}}`; do
+        item="{{vnode_prefix}}${i}";
+        grep -q "\<${item}\>" /etc/hosts || echo "127.0.0.1 ${item}.localdomain ${item}" >> /etc/hosts;
+      done
 
-# CLUES2 installation
-- name: Installing cpyutils
-  command: python setup.py install chdir=/tmp/cpyutils-master
-- name: Installing CLUES2
-  command: python setup.py install chdir=/tmp/clues-master creates=/usr/local/bin/cluesserver
+  # CLUES2 Config file
+  - name: Set CLUES2 folder rights
+    file: path=/etc/clues2 state=directory mode=755
 
-# CLUES2 configuration
-# /etc/hosts configuration
-- name: Configuring CLUES2
-  shell: |
-    for i in `seq 1 {{ec3_max_instances}}`; do
-      item="{{vnode_prefix}}${i}";
-      grep -q "\<${item}\>" /etc/hosts || echo "127.0.0.1 ${item}.localdomain ${item}" >> /etc/hosts;
-    done
+  - name: Create CLUES2 config file
+    copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
+    notify: restart cluesd
 
-# CLUES2 Config file
-- name: Set CLUES2 folder rights
-  file: path=/etc/clues2 state=directory mode=755
+  - name: Set CLUES2 config file values
+    ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
+    with_items:
+      - { section: 'general', option: 'POWERMANAGER_CLASS', value: 'cluesplugins.im' }
+      - { section: 'scheduler_power_off_idle', option: 'IDLE_TIME', value: '300' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '2000' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
+      - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
+      - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+      - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+      - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '0' }
+    notify: restart cluesd
 
-- name: Create CLUES2 config file
-  copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
-  notify: restart cluesd
+  # CLUES2 IM plugin Config file
+  - name: Create EC3 directory
+    file: path=/usr/local/ec3 state=directory
 
-- name: Set CLUES2 config file values
-  ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
-  with_items:
-    - { section: 'general', option: 'POWERMANAGER_CLASS', value: 'cluesplugins.im' }
-    - { section: 'scheduler_power_off_idle', option: 'IDLE_TIME', value: '300' }
-    - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '2000' }
-    - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
-    - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
-    - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
-    - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
-    - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '0' }
-  notify: restart cluesd
+  - name: Create auth file
+    copy:
+      dest: /usr/local/ec3/auth.dat
+      content: "{{auth}}"
+      force: no
 
-# CLUES2 IM plugin Config file
-- name: Create EC3 directory
-  file: path=/usr/local/ec3 state=directory
+  - name: Create extract proxy file
+    copy:
+      dest: /tmp/extract_proxy.py
+      content: "{{extract_proxy_file}}"
+      mode: 0755
+      force: no
 
-- name: Create auth file
-  copy:
-    dest: /usr/local/ec3/auth.dat
-    content: "{{auth}}"
-    force: no
+  - name: Extract proxy information
+    command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
+    ignore_errors: yes
+    run_once: true
 
-- name: Create extract proxy file
-  copy:
-    dest: /tmp/extract_proxy.py
-    content: "{{extract_proxy_file}}"
-    mode: 0755
-    force: no
+  - name: Create IM plugin configuration file for CLUES2
+    copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
+    notify: restart cluesd
 
-- name: Extract proxy information
-  command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
-  ignore_errors: yes
-  run_once: true
+  - name: Set IM plugin configuration file values
+    ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
+    with_items:
+      - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
+      - { option: 'IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS', value: '300' }
+    notify: restart cluesd
 
-- name: Create IM plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
-  notify: restart cluesd
+  # CLUES IM configuration
+  - name: Set EC3 folder rights
+    file: path=/usr/local/ec3 state=directory mode=755
 
-- name: Set IM plugin configuration file values
-  ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
-  with_items:
-    - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
-    - { option: 'IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS', value: '300' }
-  notify: restart cluesd
+  # CLUES LRMS configuration
+  - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
+    include: "{{clues_queue_system}}.yml"
 
-# CLUES IM configuration
-- name: Set EC3 folder rights
-  file: path=/usr/local/ec3 state=directory mode=755
-
-# CLUES LRMS configuration
-- name: Configuring the elastic cluster to use Torque LRMS
-  include: torque.yml
-  static: false
-  when: clues_queue_system == "torque"
-
-- name: Configuring the elastic cluster to use SGE LRMS
-  include: sge.yml
-  static: false
-  when: clues_queue_system == "sge"
-
-- name: Configuring the elastic cluster to use SLURM LRMS
-  include: slurm.yml
-  static: false
-  when: clues_queue_system == "slurm"
-
-- name: Configuring the elastic cluster to use Mesos LRMS
-  include: mesos.yml
-  static: false
-  when: clues_queue_system == "mesos"
-
-- name: Configuring the elastic cluster to use HTCondor LRMS
-  include: htcondor.yml
-  static: false
-  when: clues_queue_system == "condor"
-
-- service: name=cluesd state=started
+  - service: name=cluesd state=started

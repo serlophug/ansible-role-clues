@@ -5,6 +5,7 @@ CLUES cluster Role
 =======================
 
 Install [CLUES](http://www.grycap.upv.es/clues/eng/index.php).
+Recipe for [EC3](http://servproject.i3m.upv.es/ec3/).
 
 Role Variables
 --------------

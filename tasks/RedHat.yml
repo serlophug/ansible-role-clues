@@ -1,0 +1,6 @@
+---
+  - name: Install epel
+    yum: pkg=epel-release
+
+  - name: Yum install CLUES2 requirements in RedHat
+    yum: pkg=python-sqlite3dbm,unzip,python-pip update_cache=yes

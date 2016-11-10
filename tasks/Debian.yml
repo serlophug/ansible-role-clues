@@ -1,0 +1,3 @@
+---
+  - name: Apt install CLUES2 requirements in Deb system
+    apt: pkg=python-sqlite,unzip,python-pip update_cache=yes  
