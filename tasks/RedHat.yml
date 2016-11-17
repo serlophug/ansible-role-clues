@@ -4,3 +4,6 @@
 
   - name: Yum install CLUES2 requirements in RedHat
     yum: pkg=python-sqlite3dbm,unzip,python-pip update_cache=yes
+
+  - name: Set clues facts
+    set_fact: CLUES_SERVER_BINARY="/usr/bin/cluesserver"

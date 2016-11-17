@@ -9,7 +9,7 @@
     - ply
 
   # Get CLUES2 and dependencies
-  - name: Retrieving CLUES2 and cpyutils from github
+  - name: Retrieve CLUES2 and cpyutils from github
     get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
     register: result
     until: result|success
@@ -27,14 +27,14 @@
     - cpyutils
 
   # CLUES2 installation
-  - name: Installing cpyutils
+  - name: Install cpyutils
     command: python setup.py install chdir=/tmp/cpyutils-master
-  - name: Installing CLUES2
-    command: python setup.py install chdir=/tmp/clues-master creates=/usr/local/bin/cluesserver
+  - name: Install CLUES2
+    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_INSTALL_PATH}}
 
   # CLUES2 configuration
   # /etc/hosts configuration
-  - name: Configuring CLUES2
+  - name: Configure CLUES2
     shell: |
       for i in `seq 1 {{ec3_max_instances}}`; do
         item="{{vnode_prefix}}${i}";
@@ -47,7 +47,7 @@
 
   - name: Create CLUES2 config file
     copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
-    notify: restart cluesd
+    notify: start cluesd
 
   - name: Set CLUES2 config file values
     ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"

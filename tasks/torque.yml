@@ -1,9 +1,9 @@
 # CLUES PBS configuration
-- name: Set torque path
+- name: Set torque facts
   set_fact: TORQUE_PATH="/var/spool/torque" TORQUE_SERVICE="torque-server" SCHED_SERVICE="torque-scheduler" MOM_SERVICE="torque-mom" SUBMITFILTER="/usr/local/bin/clues-pbs-wrapper"
   when: ansible_os_family == "Debian"
 
-- name: Set torque path
+- name: Set torque facts
   set_fact: TORQUE_PATH="/var/lib/torque" TORQUE_SERVICE="pbs_server" SCHED_SERVICE="pbs_sched" MOM_SERVICE="pbs_mom" SUBMITFILTER="/usr/bin/clues-pbs-wrapper"
   when: ansible_os_family == "RedHat"
 
