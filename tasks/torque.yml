@@ -1,24 +1,36 @@
 # CLUES PBS configuration
-- set_fact: TORQUE_PATH="/var/spool/torque"
-- ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.pbs
-  notify: restart cluesd
-- copy: src=/etc/clues2/conf.d/plugin-pbs.cfg-example dest=/etc/clues2/conf.d/plugin-pbs.cfg force=no
-  notify: restart cluesd
-- ini_file: dest=/etc/clues2/conf.d/plugin-pbs.cfg section=PBS option=PBS_SERVER value=torqueserver
-  notify: restart cluesd
-- lineinfile: dest={{TORQUE_PATH}}/torque.cfg regexp=^SUBMITFILTER line='SUBMITFILTER /usr/local/bin/clues-pbs-wrapper' create=yes mode=644
-- copy:
-    content: |
-       {% for number in range(1, ec3_max_instances|int + 1) %}
-       {{vnode_prefix}}{{number}}
-       {% endfor %}
-    dest: "{{TORQUE_PATH}}/server_priv/nodes"
+- name: Set torque path
+  set_fact: TORQUE_PATH="/var/spool/torque" TORQUE_SERVICE="torque-server" SCHED_SERVICE="torque-scheduler" MOM_SERVICE="torque-mom"
+  when: ansible_os_family == "Debian"
 
-- service: name=torque-server state=stopped pattern=/usr/sbin/pbs_server
-- service: name=torque-server state=started pattern=/usr/sbin/pbs_server
+- name: Set torque path
+  set_fact: TORQUE_PATH="/var/lib/torque" TORQUE_SERVICE="pbs_server" SCHED_SERVICE="pbs_sched" MOM_SERVICE="pbs_mom"
+  when: ansible_os_family == "RedHat"
+
+- name: Set Torque as CLUES LRMS
+  ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.pbs
+  notify: restart cluesd
+
+- name: Set initial CLUES pbs plugin configuration
+  copy: src=/etc/clues2/conf.d/plugin-pbs.cfg-example dest=/etc/clues2/conf.d/plugin-pbs.cfg force=no
+  notify: restart cluesd
+
+- name: Configure CLUES torque plugin
+  ini_file: dest=/etc/clues2/conf.d/plugin-pbs.cfg section=PBS option=PBS_SERVER value=torqueserver
+  notify: restart cluesd
+
+- name: Add configuration line to torque config file
+  lineinfile: dest={{TORQUE_PATH}}/torque.cfg regexp=^SUBMITFILTER line='SUBMITFILTER /usr/local/bin/clues-pbs-wrapper' create=yes mode=644
+
+- name: Stop '{{TORQUE_SERVICE}}' service
+  service: name={{TORQUE_SERVICE}} state=stopped pattern=/usr/sbin/pbs_server
+- name: Start '{{TORQUE_SERVICE}}' service
+  service: name={{TORQUE_SERVICE}} state=started pattern=/usr/sbin/pbs_server
 
 # Many times pbs_server does not start properly. Wait and test it again
-- command: sleep 5
+- name: Sleep 5 seconds
+  command: sleep 5
 
-- service: name=torque-server state=started pattern=/usr/sbin/pbs_server
+- name: Start '{{TORQUE_SERVICE}}' service (again)
+  service: name={{TORQUE_SERVICE}} state=started pattern=/usr/sbin/pbs_server
   notify: restart cluesd
