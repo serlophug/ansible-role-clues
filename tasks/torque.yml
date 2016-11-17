@@ -1,10 +1,10 @@
 # CLUES PBS configuration
 - name: Set torque path
-  set_fact: TORQUE_PATH="/var/spool/torque" TORQUE_SERVICE="torque-server" SCHED_SERVICE="torque-scheduler" MOM_SERVICE="torque-mom"
+  set_fact: TORQUE_PATH="/var/spool/torque" TORQUE_SERVICE="torque-server" SCHED_SERVICE="torque-scheduler" MOM_SERVICE="torque-mom" SUBMITFILTER="/usr/local/bin/clues-pbs-wrapper"
   when: ansible_os_family == "Debian"
 
 - name: Set torque path
-  set_fact: TORQUE_PATH="/var/lib/torque" TORQUE_SERVICE="pbs_server" SCHED_SERVICE="pbs_sched" MOM_SERVICE="pbs_mom"
+  set_fact: TORQUE_PATH="/var/lib/torque" TORQUE_SERVICE="pbs_server" SCHED_SERVICE="pbs_sched" MOM_SERVICE="pbs_mom" SUBMITFILTER="/usr/bin/clues-pbs-wrapper"
   when: ansible_os_family == "RedHat"
 
 - name: Set Torque as CLUES LRMS
@@ -20,7 +20,7 @@
   notify: restart cluesd
 
 - name: Add configuration line to torque config file
-  lineinfile: dest={{TORQUE_PATH}}/torque.cfg regexp=^SUBMITFILTER line='SUBMITFILTER /usr/local/bin/clues-pbs-wrapper' create=yes mode=644
+  lineinfile: dest={{TORQUE_PATH}}/torque.cfg regexp=^SUBMITFILTER line='SUBMITFILTER {{SUBMITFILTER}}' create=yes mode=644
 
 - name: Stop '{{TORQUE_SERVICE}}' service
   service: name={{TORQUE_SERVICE}} state=stopped pattern=/usr/sbin/pbs_server
