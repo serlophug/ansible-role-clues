@@ -30,7 +30,7 @@
   - name: Install cpyutils
     command: python setup.py install chdir=/tmp/cpyutils-master
   - name: Install CLUES2
-    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_INSTALL_PATH}}
+    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
 
   # CLUES2 configuration
   # /etc/hosts configuration
