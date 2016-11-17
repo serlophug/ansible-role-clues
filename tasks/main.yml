@@ -32,6 +32,10 @@
   - name: Install CLUES2
     command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
 
+  - name: Stop clues server
+    command: systemctl stop cluesd
+    ignore_errors: yes
+
   # CLUES2 configuration
   # /etc/hosts configuration
   - name: Configure CLUES2
