@@ -1,6 +1,7 @@
 - name: Set SLURM_CONF fact
-  set_fact: SLURM_CONF="/etc/slurm-llnl/slurm.conf" SLURM_SERVICE="slurm-llnl"
+  set_fact: SLURM_CONF="/usr/local/etc/slurm.conf" SLURM_SERVICE="slurmd"
   when: ansible_os_family == "Debian"
+
 - name: Set SLURM_CONF fact
   set_fact: SLURM_CONF="/etc/slurm/slurm.conf" SLURM_SERVICE="slurm"
   when: ansible_os_family == "RedHat"
