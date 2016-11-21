@@ -54,8 +54,8 @@
       - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
       - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
       - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '2' }
-      - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{CLUES_SECRET_TOKEN}}' }
-      - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{CLUES_SECRET_TOKEN}}' }
+      - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+      - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
       - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
     notify: restart cluesd
 
