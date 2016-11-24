@@ -8,5 +8,3 @@ ec3_max_instances: 5
 vnode_prefix: wn
 # Path for the authorization file used
 auth: auth.dat
-# Path for extra configuration files needed
-extract_proxy_file: extract_proxy.py

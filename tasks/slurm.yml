@@ -1,10 +1,30 @@
 - name: Set SLURM conf facts for Debian
-  set_fact: SBATCH_BINARY="/usr/local/bin/sbatch" SBATCH_BACKUP="/usr/local/bin/sbatch.o" CLUES_SBATCH_BINARY="/usr/local/bin/clues-slurm-wrapper"
+  set_fact:
+    SBATCH_BINARY:"/usr/local/bin/sbatch"
+    SBATCH_BACKUP:"/usr/local/bin/sbatch.o"
+    CLUES_SLURM_WRAPPER:"/usr/local/bin/clues-slurm-wrapper"
+    SCONTROL_BIN:"/usr/local/bin/scontrol"
   when: ansible_os_family == "Debian"
 
 - name: Set SLURM conf facts for CentOS
-  set_fact: SBATCH_BINARY="/usr/bin/sbatch" SBATCH_BACKUP="/usr/bin/sbatch.o" CLUES_SBATCH_BINARY="/usr/bin/clues-slurm-wrapper" SBATCH_BACKUP_DEBIAN="/usr/local/bin/sbatch.o"
+  set_fact:
+    SBATCH_BINARY:"/usr/bin/sbatch"
+    SBATCH_BACKUP:"/usr/bin/sbatch.o"
+    CLUES_SLURM_WRAPPER:"/usr/bin/clues-slurm-wrapper"
+    SCONTROL_BIN:"/usr/bin/scontrol"
   when: ansible_os_family == "RedHat"
+
+- name: Update 'NodeName' in slurm.conf
+  lineinfile: dest={{SLURM_CONF}} regexp='NodeName=' line='NodeName={{vnode_prefix}}[1-{{ec3_max_instances|int}}] CPUs=1 State=UNKNOWN'
+
+- name: Update 'PartitionName' in slurm.conf
+  lineinfile: dest={{SLURM_CONF}} regexp='PartitionName=' line='PartitionName=debug Nodes={{vnode_prefix}}[1-{{ec3_max_instances|int}}] Default=YES MaxTime=INFINITE State=UP'
+
+- name: Start SLURM service
+  service: name={{SLURM_SERVICE}} state=started
+
+- name: Reconfigure SLURM
+  shell: scontrol reconfig
 
 - name: Set SLURM as CLUES2 LRMS
   ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.slurm
@@ -22,17 +42,12 @@
   ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option={{ item.option }} value="{{ item.value }}"
   notify: restart cluesd
   with_items:
-    - { option: 'SLURM_PARTITION_COMMAND', value: '/usr/bin/scontrol -o show partitions' }
-    - { option: 'SLURM_NODES_COMMAND', value: '/usr/bin/scontrol -o show nodes' }
-    - { option: 'SLURM_JOBS_COMMAND', value: '/usr/bin/scontrol -o show jobs' }
-  when: ansible_os_family == "RedHat"
+    - { option: 'SLURM_PARTITION_COMMAND', value: '{{SCONTROL_BIN}} -o show partitions' }
+    - { option: 'SLURM_NODES_COMMAND', value: '{{SCONTROL_BIN}} -o show nodes' }
+    - { option: 'SLURM_JOBS_COMMAND', value: '{{SCONTROL_BIN}} -o show jobs' }
 
 - name: Create sbatch script backup
-  command: mv {{SBATCH_BINARY}} {{SBATCH_BACKUP}} creates={{SBATCH_BACKUP}}
+  copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755
 
 - name: Replace sbatch script with clues-slurm wrapper
-  command: mv {{CLUES_SBATCH_BINARY}} {{SBATCH_BINARY}} creates={{SBATCH_BINARY}}
-
-- name: Create simbolic link
-  file: src={{SBATCH_BACKUP}} dest={{SBATCH_BACKUP_DEBIAN}} state=link
-  when: ansible_os_family == "RedHat"
+  copy: src={{CLUES_SLURM_WRAPPER}} dest={{SBATCH_BINARY}}

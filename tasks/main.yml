@@ -36,6 +36,15 @@
     command: systemctl stop cluesd
     ignore_errors: yes
 
+  # CLUES2 configuration
+  # /etc/hosts configuration
+  - name: Configuring CLUES2
+    shell: |
+      for i in `seq 1 {{ec3_max_instances}}`; do
+        item="{{vnode_prefix}}${i}";
+        grep -q "\<${item}\>" /etc/hosts || echo "127.0.0.1 ${item}.localdomain ${item}" >> /etc/hosts;
+      done
+
   # CLUES2 Config file
   - name: Set CLUES2 folder rights
     file: path=/etc/clues2 state=directory mode=755
@@ -61,7 +70,7 @@
 
   # CLUES2 IM plugin Config file
   - name: Create EC3 directory
-    file: path=/usr/local/ec3 state=directory
+    file: path=/usr/local/ec3 state=directory mode=755
 
   - name: Create auth file
     copy:
@@ -69,12 +78,8 @@
       content: "{{auth}}"
       force: no
 
-  - name: Create extract proxy file
-    copy:
-      dest: /tmp/extract_proxy.py
-      content: "{{extract_proxy_file}}"
-      mode: 0755
-      force: no
+  - name: Copy 'extract_proxy' file
+    copy: dest=/tmp/extract_proxy.py src=extract_proxy.py mode=0755 force: no
 
   - name: Extract proxy information
     command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
