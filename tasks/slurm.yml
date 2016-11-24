@@ -21,7 +21,7 @@
   lineinfile: dest={{SLURM_CONF}} regexp='PartitionName=' line='PartitionName=debug Nodes={{vnode_prefix}}[1-{{ec3_max_instances|int}}] Default=YES MaxTime=INFINITE State=UP'
 
 - name: Start SLURM service
-  service: name={{SLURM_SERVICE}} state=started
+  shell: pgrep slurmctld || nohup /usr/local/sbin/slurmctld > /dev/null 2>&1 &
 
 - name: Reconfigure SLURM
   shell: scontrol reconfig
