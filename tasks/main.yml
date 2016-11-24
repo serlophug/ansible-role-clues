@@ -79,7 +79,7 @@
       force: no
 
   - name: Copy 'extract_proxy' file
-    copy: dest=/tmp/extract_proxy.py src=extract_proxy.py mode=0755 force: no
+    copy: dest=/tmp/extract_proxy.py src=extract_proxy.py mode=0755 force=no
 
   - name: Extract proxy information
     command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
