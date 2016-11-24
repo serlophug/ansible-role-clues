@@ -4,7 +4,7 @@
     SBATCH_BACKUP:"/usr/local/bin/sbatch.o"
     CLUES_SLURM_WRAPPER:"/usr/local/bin/clues-slurm-wrapper"
     SCONTROL_BIN:"/usr/local/bin/scontrol"
-    SLURM_SERVICE: "slurmctld"
+    SLURM_SERVICE:"slurmctld"
   when: ansible_os_family == "Debian"
 
 - name: Set SLURM conf facts for CentOS
