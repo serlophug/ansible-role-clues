@@ -22,14 +22,10 @@
   lineinfile: dest={{SLURM_CONF}} regexp='PartitionName=' line='PartitionName=debug Nodes={{vnode_prefix}}[1-{{ec3_max_instances|int}}] Default=YES MaxTime=INFINITE State=UP'
 
 - name: Start SLURM service
-  become: true
-  become_user: slurm
-  shell: slurmctld
+  command: slurmctld
 
 - name: Reconfigure SLURM
-  become: true
-  become_user: slurm
-  shell: scontrol reconfig
+  command: scontrol reconfig
 
 - name: Set SLURM as CLUES2 LRMS
   ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.slurm
