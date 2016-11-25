@@ -1,18 +1,18 @@
 - name: Set SLURM conf facts for Debian
   set_fact:
-    SBATCH_BINARY:"/usr/local/bin/sbatch"
-    SBATCH_BACKUP:"/usr/local/bin/sbatch.o"
-    CLUES_SLURM_WRAPPER:"/usr/local/bin/clues-slurm-wrapper"
-    SCONTROL_BIN:"/usr/local/bin/scontrol"
-    SLURM_SERVICE:"slurmctld"
+    SBATCH_BINARY: "/usr/local/bin/sbatch"
+    SBATCH_BACKUP: "/usr/local/bin/sbatch.o"
+    CLUES_SLURM_WRAPPER: "/usr/local/bin/clues-slurm-wrapper"
+    SCONTROL_BIN: "/usr/local/bin/scontrol"
+    SLURM_SERVICE: "slurmctld"
   when: ansible_os_family == "Debian"
 
 - name: Set SLURM conf facts for CentOS
   set_fact:
-    SBATCH_BINARY:"/usr/bin/sbatch"
-    SBATCH_BACKUP:"/usr/bin/sbatch.o"
-    CLUES_SLURM_WRAPPER:"/usr/bin/clues-slurm-wrapper"
-    SCONTROL_BIN:"/usr/bin/scontrol"
+    SBATCH_BINARY: "/usr/bin/sbatch"
+    SBATCH_BACKUP: "/usr/bin/sbatch.o"
+    CLUES_SLURM_WRAPPER: "/usr/bin/clues-slurm-wrapper"
+    SCONTROL_BIN: "/usr/bin/scontrol"
   when: ansible_os_family == "RedHat"
 
 - name: Update 'NodeName' in slurm.conf
@@ -43,9 +43,9 @@
   ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option={{ item.option }} value="{{ item.value }}"
   notify: restart cluesd
   with_items:
-    - { option: 'SLURM_PARTITION_COMMAND', value: '/usr/local/bin/scontrol -o show partitions' }
-    - { option: 'SLURM_NODES_COMMAND', value: '/usr/local/bin/scontrol -o show nodes' }
-    - { option: 'SLURM_JOBS_COMMAND', value: '/usr/local/bin/scontrol -o show jobs' }
+    - { option: 'SLURM_PARTITION_COMMAND', value: '{{SCONTROL_BIN}} -o show partitions' }
+    - { option: 'SLURM_NODES_COMMAND', value: '{{SCONTROL_BIN}} -o show nodes' }
+    - { option: 'SLURM_JOBS_COMMAND', value: '{{SCONTROL_BIN}} -o show jobs' }
 
 - name: Create sbatch script backup
   copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755
