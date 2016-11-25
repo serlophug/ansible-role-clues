@@ -43,9 +43,9 @@
   ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option={{ item.option }} value="{{ item.value }}"
   notify: restart cluesd
   with_items:
-    - { option: 'SLURM_PARTITION_COMMAND', value: '{{SCONTROL_BIN}} -o show partitions' }
-    - { option: 'SLURM_NODES_COMMAND', value: '{{SCONTROL_BIN}} -o show nodes' }
-    - { option: 'SLURM_JOBS_COMMAND', value: '{{SCONTROL_BIN}} -o show jobs' }
+    - { option: 'SLURM_PARTITION_COMMAND', value: '/usr/local/bin/scontrol -o show partitions' }
+    - { option: 'SLURM_NODES_COMMAND', value: '/usr/local/bin/scontrol -o show nodes' }
+    - { option: 'SLURM_JOBS_COMMAND', value: '/usr/local/bin/scontrol -o show jobs' }
 
 - name: Create sbatch script backup
   copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755
