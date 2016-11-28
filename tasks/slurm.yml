@@ -48,7 +48,7 @@
     - { option: 'SLURM_JOBS_COMMAND', value: '{{SCONTROL_BIN}} -o show jobs' }
 
 - name: Create sbatch script backup
-  copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755
+  copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755 force=no
 
 - name: Replace sbatch script with clues-slurm wrapper
   copy: src={{CLUES_SLURM_WRAPPER}} dest={{SBATCH_BINARY}}
