@@ -38,7 +38,7 @@
        {% for number in range(1, ec3_max_instances|int + 1) %}
        {{vnode_prefix}}{{number}}
        {% endfor %}
-  dest: "{{TORQUE_PATH}}/server_priv/nodes"
+    dest: "{{TORQUE_PATH}}/server_priv/nodes"
 
 - name: Stop '{{TORQUE_SERVICE}}' service
   service: name={{TORQUE_SERVICE}} state=stopped pattern=/usr/sbin/pbs_server
