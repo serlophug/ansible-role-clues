@@ -35,7 +35,7 @@
 - name: Create torque nodes
   copy:
     content: |
-       {% for number in range(1, ec3_max_instances|int + 1) %}
+       {% for number in range(1, max_number_of_nodes|int + 1) %}
        {{vnode_prefix}}{{number}}
        {% endfor %}
     dest: "{{TORQUE_PATH}}/server_priv/nodes"
