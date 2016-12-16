@@ -6,7 +6,7 @@
     yum: pkg=unzip,python-pip update_cache=yes
 
   - name: Pip install sqlite3 package
-    pip: name=sqlite3dbm
+    pip: name=sqlite3dbm,importlib
 
   - name: Set clues facts
     set_fact: CLUES_SERVER_BINARY="/usr/bin/cluesserver"
