@@ -42,7 +42,7 @@
 
   - name: Create CLUES2 config file
     copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
-    notify: start cluesd
+    notify: restart cluesd
 
   - name: Set CLUES2 config file values
     ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
