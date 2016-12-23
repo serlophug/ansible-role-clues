@@ -15,12 +15,6 @@
     SCONTROL_BIN: "/usr/bin/scontrol"
   when: ansible_os_family == "RedHat"
 
-- name: Update 'NodeName' in slurm.conf
-  lineinfile: dest={{SLURM_CONF}} regexp='NodeName=' line='NodeName={{vnode_prefix}}[1-{{max_number_of_nodes|int}}] CPUs=1 State=UNKNOWN'
-
-- name: Update 'PartitionName' in slurm.conf
-  lineinfile: dest={{SLURM_CONF}} regexp='PartitionName=' line='PartitionName=debug Nodes={{vnode_prefix}}[1-{{max_number_of_nodes|int}}] Default=YES MaxTime=INFINITE State=UP'
-
 - name: Start SLURM service
   command: slurmctld
 
