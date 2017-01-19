@@ -97,3 +97,8 @@
     include: "{{clues_queue_system}}.yml"
 
   - service: name=cluesd state=started
+ 
+  # This fixes a problem with the CLUES service in Centos 7
+  - name: Kill and restart clues service (Centos 7 only)
+    shell: pgrep cluesserver | xargs kill && service cluesd restart
+    when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
