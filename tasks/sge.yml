@@ -1,8 +1,13 @@
-- name: Set SGE conf facts for CentOS
+- name: Set SGE conf facts for CentOS 6
   set_fact:
     SGE_ROOT: "/usr/share/gridengine"
-  when: ansible_os_family == "RedHat"
-  
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+
+- name: Set SGE conf facts for CentOS 7
+  set_fact:
+    SGE_ROOT: "/opt/sge"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
+
 # CLUES SGE configuration
 - ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.sge
   notify: restart cluesd
@@ -14,6 +19,6 @@
   notify: restart cluesd
 - lineinfile: dest=/etc/profile.d/sge_vars.sh regexp='SGE_JSV_TIMEOUT' line="export SGE_JSV_TIMEOUT=600" create=yes mode=755
   notify: restart cluesd
-- ini_file: dest=/etc/clues2/conf.d/plugin-sge.cfg section=SGE option=SGE_ROOT value="/usr/share/gridengine"
+- ini_file: dest=/etc/clues2/conf.d/plugin-sge.cfg section=SGE option=SGE_ROOT value="{{SGE_ROOT}}"
   when: ansible_os_family == "RedHat"
   notify: restart cluesd
