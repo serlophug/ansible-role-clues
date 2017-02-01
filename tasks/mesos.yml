@@ -5,6 +5,8 @@
   notify: restart cluesd
 
 - set_fact: mesos_servername="mesosserverpublic"
+  when: mesos_servername is not defined
+
 - ini_file: dest=/etc/clues2/conf.d/plugin-mesos.cfg section=MESOS option=MESOS_SERVER value={{mesos_servername}}
   notify: restart cluesd
 - ini_file: dest=/etc/clues2/conf.d/plugin-mesos.cfg section=MESOS option=MESOS_NODES_COMMAND value="/usr/bin/curl -L -X GET http://{{mesos_servername}}:5050/master/slaves"
