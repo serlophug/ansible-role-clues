@@ -3,7 +3,7 @@
     include: "{{ansible_os_family}}.yml"
 
   - name: Install CLUES2 pip requirements
-    pip: name={{item}}
+    pip: name={{item}} state=latest executable=pip
     with_items:
     - web.py
     - ply
@@ -97,7 +97,7 @@
     include: "{{clues_queue_system}}.yml"
 
   - service: name=cluesd state=started
- 
+
   # This fixes a problem with the CLUES service in Centos 7
   - name: Kill and restart clues service (Centos 7 only)
     shell: pgrep cluesserver | xargs kill && service cluesd start
