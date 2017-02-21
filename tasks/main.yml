@@ -1,4 +1,15 @@
 ---
+# Add a fast check to speed reconfiguration
+- set_fact: CLUES_PATH=/usr/local/bin/clues
+  when: ansible_os_family == "Debian"
+
+- set_fact: CLUES_PATH=/usr/bin/clues
+  when: ansible_os_family == "RedHat"
+
+- stat: path={{CLUES_PATH}}
+  register: clues_installed
+
+- block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
     include: "{{ansible_os_family}}.yml"
 
@@ -102,3 +113,5 @@
   - name: Kill and restart clues service (Centos 7 only)
     shell: pgrep cluesserver | xargs kill && service cluesd start
     when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+
+  when: not clues_installed.stat.exists
