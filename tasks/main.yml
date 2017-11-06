@@ -107,7 +107,7 @@
   - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
     include: "{{clues_queue_system}}.yml"
 
-  - service: name=cluesd state=started
+  - service: name=cluesd state=started enabled=yes
 
   # This fixes a problem with the CLUES service in Centos 7
   - name: Kill and restart clues service (Centos 7 only)
