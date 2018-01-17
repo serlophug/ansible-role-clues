@@ -10,3 +10,5 @@ vnode_prefix: wn
 auth: auth.dat
 # Class to use as power manager (POWERMANAGER_CLASS)
 clues_powermanager_class: cluesplugins.im
+
+github_user_clues: grycap

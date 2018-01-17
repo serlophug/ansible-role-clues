@@ -1,0 +1,69 @@
+# CLUES NOMAD configuration
+- ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.nomad
+  notify: restart cluesd
+- copy: src=/etc/clues2/conf.d/plugin-nomad.cfg-example dest=/etc/clues2/conf.d/plugin-nomad.cfg force=no
+  notify: restart cluesd
+
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_NODES_LIST_CLUES value={{NOMAD_NODES_LIST_CLUES}}
+  notify: restart cluesd
+  when: NOMAD_NODES_LIST_CLUES is defined
+
+# NOMAD
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_SERVER value={{NOMAD_SERVER}}
+  notify: restart cluesd
+  when: NOMAD_SERVER is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_PRIVATE_HTTP_PORT value={{NOMAD_PRIVATE_HTTP_PORT}}
+  notify: restart cluesd
+  when: NOMAD_PRIVATE_HTTP_PORT is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_STATE_OFF value={{NOMAD_STATE_OFF}}
+  notify: restart cluesd
+  when: NOMAD_STATE_OFF is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_STATE_ON value={{NOMAD_STATE_ON}}
+  notify: restart cluesd
+  when: NOMAD_STATE_ON is defined
+
+# API VARIABLES
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_HEADERS value={{NOMAD_HEADERS}}
+  notify: restart cluesd
+  when: NOMAD_HEADERS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_VERSION value={{NOMAD_API_VERSION}}
+  notify: restart cluesd
+  when: NOMAD_API_VERSION is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_SERVERS value={{NOMAD_API_URL_GET_SERVERS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_SERVERS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENTS value={{NOMAD_API_URL_GET_CLIENTS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_CLIENTS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENT_INFO value={{NOMAD_API_URL_GET_CLIENT_INFO}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_CLIENT_INFO is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENT_STATUS value={{NOMAD_API_URL_GET_CLIENT_STATUS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_CLIENT_STATUS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_ALLOCATIONS value={{NOMAD_API_URL_GET_ALLOCATIONS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_ALLOCATIONS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_SERVERS value={{NOMAD_API_URL_GET_SERVERS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_SERVERS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_JOBS value={{NOMAD_API_URL_GET_JOBS}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_JOBS is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_JOBS_INFO value={{NOMAD_API_URL_GET_JOBS_INFO}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_JOBS_INFO is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_ALLOCATION_INFO value={{NOMAD_API_URL_GET_ALLOCATION_INFO}}
+  notify: restart cluesd
+  when: NOMAD_API_URL_GET_ALLOCATION_INFO is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=MAX_RETRIES value={{MAX_RETRIES}}
+  notify: restart cluesd
+  when: MAX_RETRIES is defined
+
+  # AUTH
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_ACL_TOKEN value={{NOMAD_ACL_TOKEN}}
+  notify: restart cluesd
+  when: NOMAD_ACL_TOKEN is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_AUTH_DATA value={{NOMAD_AUTH_DATA}}
+  notify: restart cluesd
+  when: NOMAD_AUTH_DATA is defined

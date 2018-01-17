@@ -20,15 +20,21 @@
     - ply
 
   # Get CLUES2 and dependencies
-  - name: Retrieve CLUES2 and cpyutils from github
+  - name: Retrieve cpyutils from github
     get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
     register: result
     until: result|success
     retries: 5
     delay: 1
     with_items:
-    - clues
     - cpyutils
+  
+  - name: Retrieve CLUES from github
+    get_url: url=https://github.com/{{ github_user_clues }}/clues/archive/master.zip dest=/tmp/{{item}}.zip force=no
+    register: result
+    until: result|success
+    retries: 5
+    delay: 1
 
   # Unarchive CLUES2 and dependencies
   - name: Unarchiving CLUES2 and cpyutils
