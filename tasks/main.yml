@@ -30,7 +30,7 @@
     - cpyutils
   
   - name: Retrieve CLUES from github
-    get_url: url=https://github.com/{{ github_user_clues }}/clues/archive/master.zip dest=/tmp/{{item}}.zip force=no
+    get_url: url=https://github.com/{{ github_user_clues }}/clues/archive/master.zip dest=/tmp/clues.zip force=no
     register: result
     until: result|success
     retries: 5
