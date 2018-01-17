@@ -1,0 +1,12 @@
+
+- name: Set Kubernetes as CLUES2 LRMS
+  ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.kubernetes
+  notify: restart cluesd
+
+- name: Create Kubernetes plugin configuration file for CLUES2
+  copy: src=/etc/clues2/conf.d/plugin-kubernetes.cfg-example dest=/etc/clues2/conf.d/plugin-kubernetes.cfg force=no
+  notify: restart cluesd
+
+- name: Set KUBERNETES_SERVER value
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_SERVER value="https://localhost:6443"
+  notify: restart cluesd
