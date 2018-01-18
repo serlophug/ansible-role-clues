@@ -14,5 +14,5 @@
   notify: restart cluesd
 
 - name: Set KUBERNETES_SERVER value
-  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_SERVER value="https://localhost:6443"
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_SERVER value="http://localhost:8080"
   notify: restart cluesd
