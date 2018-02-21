@@ -7,6 +7,13 @@
 - ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_NODES_LIST_CLUES value={{NOMAD_NODES_LIST_CLUES}}
   notify: restart cluesd
   when: NOMAD_NODES_LIST_CLUES is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_DEFAULT_CPUS_PER_NODE value={{NOMAD_DEFAULT_CPUS_PER_NODE}}
+  notify: restart cluesd
+  when: NOMAD_DEFAULT_CPUS_PER_NODE is defined
+- ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_DEFAULT_MEMORY_PER_NODE value={{NOMAD_DEFAULT_MEMORY_PER_NODE}}
+  notify: restart cluesd
+  when: NOMAD_DEFAULT_MEMORY_PER_NODE is defined
+
 
 # NOMAD
 - ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_SERVER value={{NOMAD_SERVER}}
