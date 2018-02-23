@@ -1,0 +1,44 @@
+- copy:
+    content: |
+        {% for number in range(1, NNODES|int + 1) %}
+        {{vnode_prefix}}{{number}}.localdomain
+        {% endfor %}
+    dest: "/etc/clues2/kubernetes_vnodes.info"
+
+- name: Set Kubernetes as CLUES2 LRMS
+  ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.kubernetes
+  notify: restart cluesd
+
+- name: Create Kubernetes plugin configuration file for CLUES2
+  copy: src=/etc/clues2/conf.d/plugin-kubernetes.cfg-example dest=/etc/clues2/conf.d/plugin-kubernetes.cfg force=no
+  notify: restart cluesd
+
+- name: Set KUBERNETES_SERVER value
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_SERVER value="http://localhost:8080"
+  notify: restart cluesd
+  
+- name: Set KUBERNETES_PODS_API_URL_PATH value 
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_PODS_API_URL_PATH value={{KUBERNETES_PODS_API_URL_PATH}}
+  notify: restart cluesd
+  when: KUBERNETES_PODS_API_URL_PATH is defined  
+
+- name: Set KUBERNETES_NODES_API_URL_PATH value 
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_NODES_API_URL_PATH value={{KUBERNETES_NODES_API_URL_PATH}}
+  notify: restart cluesd
+  when: KUBERNETES_NODES_API_URL_PATH is defined  
+
+- name: Set KUBERNETES_NODE_MEMORY value 
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_NODE_MEMORY value={{KUBERNETES_NODE_MEMORY}}
+  notify: restart cluesd
+  when: KUBERNETES_NODE_MEMORY is defined  
+
+- name: Set KUBERNETES_NODE_SLOTS value 
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_NODE_SLOTS value={{KUBERNETES_NODE_SLOTS}}
+  notify: restart cluesd
+  when: KUBERNETES_NODE_SLOTS is defined  
+
+- name: Set KUBERNETES_NODE_PODS value 
+  ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_NODE_PODS value={{KUBERNETES_NODE_PODS}}
+  notify: restart cluesd
+  when: KUBERNETES_NODE_PODS is defined  
+
