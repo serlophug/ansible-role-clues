@@ -1,3 +1,6 @@
+- name: Pip install urllib3
+    pip: name=urllib3
+
 - name: "Edit /etc/hosts file"
   shell: |
     for i in `seq 1 {{NNODES}}`; do
