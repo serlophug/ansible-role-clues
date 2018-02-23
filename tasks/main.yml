@@ -18,6 +18,7 @@
     with_items:
     - web.py
     - ply
+    - radl
 
   # Get CLUES2 and dependencies
   - name: Retrieve cpyutils and clues from github

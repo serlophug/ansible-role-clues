@@ -41,4 +41,3 @@
   ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_NODE_PODS value={{KUBERNETES_NODE_PODS}}
   notify: restart cluesd
   when: KUBERNETES_NODE_PODS is defined  
-
