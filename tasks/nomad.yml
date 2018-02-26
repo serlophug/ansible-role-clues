@@ -1,5 +1,5 @@
 - name: Pip install urllib3
-    pip: name=urllib3
+  pip: name=urllib3
 
 - name: "Edit /etc/hosts file"
   shell: |
