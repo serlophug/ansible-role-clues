@@ -5,7 +5,7 @@
   - name: Yum install CLUES2 requirements in RedHat
     yum: pkg=unzip,python-pip update_cache=yes
 
-  - name: Pip install sqlite3 package
+  - name: Pip install packages
     pip: name=sqlite3dbm,importlib
 
   - name: Set clues facts

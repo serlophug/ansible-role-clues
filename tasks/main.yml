@@ -21,15 +21,16 @@
     - radl
 
   # Get CLUES2 and dependencies
-  - name: Retrieve CLUES2 and cpyutils from github
+  - name: Retrieve cpyutils and clues from github
     get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
     register: result
     until: result|success
     retries: 5
     delay: 1
     with_items:
-    - clues
     - cpyutils
+    - clues
+  
 
   # Unarchive CLUES2 and dependencies
   - name: Unarchiving CLUES2 and cpyutils
