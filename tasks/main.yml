@@ -17,7 +17,7 @@
 - name: "If container {{ container_name }} is running, it creates /tmp/{{ container_name }}_is_running"
   command: "docker inspect {{ container_name }} > /dev/null && echo 1>/tmp/{{ container_name }}_is_running  || echo '{{ container_name }} is not running'"
   ignore_errors: yes
-   
+
 - stat: path="/tmp/{{ container_name }}_is_running"
   register: container_is_running
 
@@ -166,4 +166,4 @@
       when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
     when: not clues_use_docker
     
-  when: (not clues_use_docker and not clues_installed.stat.exists) or (clues_use_docker and container_is_running.stat.exists)
+  when: (not clues_use_docker and not clues_installed.stat.exists) or (clues_use_docker and not container_is_running.stat.exists)
