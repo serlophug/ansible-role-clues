@@ -10,9 +10,12 @@
   register: clues_installed
 
 - block:
-  # CLUES2 IM plugin Config file
+  # COMMON INSTALLATION
   - name: Create EC3 directory
     file: path=/usr/local/ec3 state=directory mode=755
+
+  - name: Create /etc/clues2 directory
+    file: path=/etc/clues2 state=directory mode=755
 
   - name: Create auth file
     copy:
@@ -46,27 +49,36 @@
     - clues
     - cpyutils  
 
-  - name: Include "{{ansible_os_family}}" CLUES2 requirements
-    include: "{{ansible_os_family}}.yml"
+  # Install CLUES and dependencies
+  - block:  
+    - name: Include "{{ansible_os_family}}" CLUES2 requirements
+      include: "{{ansible_os_family}}.yml"
 
-  - name: Install CLUES2 pip requirements
-    pip: name={{item}} state=latest executable=pip
-    with_items:
-    - web.py
-    - ply
-    - radl
+    - name: Install CLUES2 pip requirements
+      pip: name={{item}} state=latest executable=pip
+      with_items:
+      - web.py
+      - ply
+      - radl
 
-  # CLUES2 installation
-  - name: Install cpyutils
-    command: python setup.py install chdir=/tmp/cpyutils-master
-  - name: Install CLUES2
-    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
+    # CLUES2 installation
+    - name: Install cpyutils
+      command: python setup.py install chdir=/tmp/cpyutils-master
+    - name: Install CLUES2
+      command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
 
-  - name: Stop clues server
-    command: systemctl stop cluesd
-    ignore_errors: yes
+    - name: Stop clues server
+      command: systemctl stop cluesd
+      ignore_errors: yes
 
-  # CLUES2 Config file
+    when: not docker_installation
+
+  # Copy configuration files (it is nedeed because for docker installation because the role doesn't execute setup.py )
+  - name: "Copy /tmp/clues-master/etc/ to {{ clues_configuration_dir }}"
+    command: "cp -r /tmp/clues-master/etc/ {{ clues_configuration_dir }}"
+    when: docker_installation
+
+  # Configuring CLUES and IM
   - name: Set CLUES2 folder rights
     file: path={{ clues_configuration_dir }} state=directory mode=755
 
@@ -88,12 +100,11 @@
       - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
       - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
       - { section: 'IM_VIRTUAL_CLUSTER', option: 'IM_VIRTUAL_CLUSTER_XMLRPC', value: '{{ IM_VIRTUAL_CLUSTER_XMLRPC }}' }
-    notify: restart cluesd
-
+    #notify: restart cluesd
 
   - name: Create IM plugin configuration file for CLUES2
     copy: src={{ clues_configuration_dir }}/conf.d/plugin-im.cfg-example dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg force=no
-    notify: restart cluesd
+    #notify: restart cluesd
 
   - name: Set IM plugin configuration file values
     ini_file: dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
@@ -101,13 +112,13 @@
       - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
       - { option: 'IM_VIRTUAL_CLUSTER_XMLRPC', value: '{{ IM_VIRTUAL_CLUSTER_XMLRPC }}' }
       - { option: 'IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS', value: '600' }
-    notify: restart cluesd
+    #notify: restart cluesd
 
   # CLUES LRMS configuration
   - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
     include: "{{clues_queue_system}}.yml"
 
-  # DOCKER INSTALLATION
+  # DOCKER START
   - block:
     - name: Install dependencies for docker management
       pip: name=docker-py
@@ -130,35 +141,15 @@
 
     when: docker_installation
 
-  # NORMAL INSTALLATION
+  # NORMAL START
   - block:  
-    - name: Include "{{ansible_os_family}}" CLUES2 requirements
-      include: "{{ansible_os_family}}.yml"
-
-    - name: Install CLUES2 pip requirements
-      pip: name={{item}} state=latest executable=pip
-      with_items:
-      - web.py
-      - ply
-      - radl
-
-    # CLUES2 installation
-    - name: Install cpyutils
-      command: python setup.py install chdir=/tmp/cpyutils-master
-    - name: Install CLUES2
-      command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
-
-    - name: Stop clues server
-      command: systemctl stop cluesd
-      ignore_errors: yes
-
-    - service: name=cluesd state=started enabled=yes
+    - name: "Start cluesd service"
+      service: name=cluesd state=started enabled=yes
 
     # This fixes a problem with the CLUES service in Centos 7
     - name: Kill and restart clues service (Centos 7 only)
       shell: pgrep cluesserver | xargs kill && service cluesd start
       when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
-
     when: not docker_installation
     
   when: not clues_installed.stat.exists
