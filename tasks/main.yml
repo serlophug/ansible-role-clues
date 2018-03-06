@@ -10,68 +10,6 @@
   register: clues_installed
 
 - block:
-  - name: Include "{{ansible_os_family}}" CLUES2 requirements
-    include: "{{ansible_os_family}}.yml"
-
-  - name: Install CLUES2 pip requirements
-    pip: name={{item}} state=latest executable=pip
-    with_items:
-    - web.py
-    - ply
-    - radl
-
-  # Get CLUES2 and dependencies
-  - name: Retrieve cpyutils and clues from github
-    get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
-    register: result
-    until: result|success
-    retries: 5
-    delay: 1
-    with_items:
-    - cpyutils
-    - clues
-  
-
-  # Unarchive CLUES2 and dependencies
-  - name: Unarchiving CLUES2 and cpyutils
-    unarchive: src=/tmp/{{item}}.zip dest=/tmp copy=no creates=/tmp/{{item}}-master
-    with_items:
-    - clues
-    - cpyutils
-
-  # CLUES2 installation
-  - name: Install cpyutils
-    command: python setup.py install chdir=/tmp/cpyutils-master
-  - name: Install CLUES2
-    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
-
-  - name: Stop clues server
-    command: systemctl stop cluesd
-    ignore_errors: yes
-
-  # CLUES2 Config file
-  - name: Set CLUES2 folder rights
-    file: path=/etc/clues2 state=directory mode=755
-
-  - name: Create CLUES2 config file
-    copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
-    notify: restart cluesd
-
-  - name: Set CLUES2 config file values
-    ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
-    with_items:
-      - { section: 'general', option: 'POWERMANAGER_CLASS', value: '{{clues_powermanager_class}}' }
-      - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
-      - { section: 'scheduling', option: 'RECONSIDER_JOB_TIME', value: '120' }
-      - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '3000' }
-      - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
-      - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
-      - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '2' }
-      - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
-      - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
-      - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
-    notify: restart cluesd
-
   # CLUES2 IM plugin Config file
   - name: Create EC3 directory
     file: path=/usr/local/ec3 state=directory mode=755
@@ -90,30 +28,138 @@
     ignore_errors: yes
     run_once: true
 
+  # Get CLUES2 and dependencies
+  - name: Retrieve cpyutils and clues from github
+    get_url: url=https://github.com/grycap/{{item}}/archive/master.zip dest=/tmp/{{item}}.zip force=no
+    register: result
+    until: result|success
+    retries: 5
+    delay: 1
+    with_items:
+    - cpyutils
+    - clues  
+
+  # Unarchive CLUES2 and dependencies
+  - name: Unarchiving CLUES2 and cpyutils
+    unarchive: src=/tmp/{{item}}.zip dest=/tmp copy=no creates=/tmp/{{item}}-master
+    with_items:
+    - clues
+    - cpyutils  
+
+  - name: Include "{{ansible_os_family}}" CLUES2 requirements
+    include: "{{ansible_os_family}}.yml"
+
+  - name: Install CLUES2 pip requirements
+    pip: name={{item}} state=latest executable=pip
+    with_items:
+    - web.py
+    - ply
+    - radl
+
+  # CLUES2 installation
+  - name: Install cpyutils
+    command: python setup.py install chdir=/tmp/cpyutils-master
+  - name: Install CLUES2
+    command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
+
+  - name: Stop clues server
+    command: systemctl stop cluesd
+    ignore_errors: yes
+
+  # CLUES2 Config file
+  - name: Set CLUES2 folder rights
+    file: path={{ clues_configuration_dir }} state=directory mode=755
+
+  - name: Create CLUES2 config file
+    copy: src={{ clues_configuration_dir }}/clues2.cfg-full-example dest={{ clues_configuration_dir }}/clues2.cfg force=no
+    notify: restart cluesd
+
+  - name: Set CLUES2 config file values
+    ini_file: dest={{ clues_configuration_dir }}/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
+    with_items:
+      - { section: 'general', option: 'POWERMANAGER_CLASS', value: '{{clues_powermanager_class}}' }
+      - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
+      - { section: 'scheduling', option: 'RECONSIDER_JOB_TIME', value: '120' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '3000' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
+      - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
+      - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '2' }
+      - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+      - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
+      - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
+      - { section: 'IM_VIRTUAL_CLUSTER', option: 'IM_VIRTUAL_CLUSTER_XMLRPC', value: '{{ IM_VIRTUAL_CLUSTER_XMLRPC }}' }
+    notify: restart cluesd
+
+
   - name: Create IM plugin configuration file for CLUES2
-    copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
+    copy: src={{ clues_configuration_dir }}/conf.d/plugin-im.cfg-example dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg force=no
     notify: restart cluesd
 
   - name: Set IM plugin configuration file values
-    ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
+    ini_file: dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
     with_items:
       - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
+      - { option: 'IM_VIRTUAL_CLUSTER_XMLRPC', value: '{{ IM_VIRTUAL_CLUSTER_XMLRPC }}' }
       - { option: 'IM_VIRTUAL_CLUSTER_DROP_FAILING_VMS', value: '600' }
     notify: restart cluesd
-
-  # CLUES IM configuration
-  - name: Set EC3 folder rights
-    file: path=/usr/local/ec3 state=directory mode=755
 
   # CLUES LRMS configuration
   - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
     include: "{{clues_queue_system}}.yml"
 
-  - service: name=cluesd state=started enabled=yes
+  # DOCKER INSTALLATION
+  - block:
+    - name: Install dependencies for docker management
+      pip: name=docker-py
+    
+    - name: 
+    - name: Run Clues container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ clues_image }}"
+        state: started
+        detach: True
+        restart_policy: always
+        network_mode: bridge
+        volumes:
+        - "{{ clues_configuration_dir }}:/etc/clues2"
+        - "/usr/local/ec3:/usr/local/ec3"
+        #published_ports:
+        #- "0.0.0.0:8000:8000"
+        hostname: "{{ docker_container_name }}"
+        command: "service cluesd start && tail -f /var/log/clues2/clues2.log"
 
-  # This fixes a problem with the CLUES service in Centos 7
-  - name: Kill and restart clues service (Centos 7 only)
-    shell: pgrep cluesserver | xargs kill && service cluesd start
-    when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+    when: docker_installation
 
+  # NORMAL INSTALLATION
+  - block:  
+    - name: Include "{{ansible_os_family}}" CLUES2 requirements
+      include: "{{ansible_os_family}}.yml"
+
+    - name: Install CLUES2 pip requirements
+      pip: name={{item}} state=latest executable=pip
+      with_items:
+      - web.py
+      - ply
+      - radl
+
+    # CLUES2 installation
+    - name: Install cpyutils
+      command: python setup.py install chdir=/tmp/cpyutils-master
+    - name: Install CLUES2
+      command: python setup.py install chdir=/tmp/clues-master creates={{CLUES_SERVER_BINARY}}
+
+    - name: Stop clues server
+      command: systemctl stop cluesd
+      ignore_errors: yes
+
+    - service: name=cluesd state=started enabled=yes
+
+    # This fixes a problem with the CLUES service in Centos 7
+    - name: Kill and restart clues service (Centos 7 only)
+      shell: pgrep cluesserver | xargs kill && service cluesd start
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+
+    when: not docker_installation
+    
   when: not clues_installed.stat.exists

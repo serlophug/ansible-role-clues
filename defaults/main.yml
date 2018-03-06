@@ -10,3 +10,11 @@ vnode_prefix: wn
 auth: auth.dat
 # Class to use as power manager (POWERMANAGER_CLASS)
 clues_powermanager_class: cluesplugins.im
+
+clues_configuration_dir: /etc/clues2
+
+docker_installation: false
+
+clues_image: grycap/clues2
+container_name: clues2
+IM_VIRTUAL_CLUSTER_XMLRPC: http://localhost:8899
