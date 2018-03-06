@@ -112,7 +112,6 @@
     - name: Install dependencies for docker management
       pip: name=docker-py
     
-    - name: 
     - name: Run Clues container
       docker_container:
         name: "{{ container_name }}"
