@@ -16,7 +16,8 @@
 
 - name: "If container {{ container_name }} is running, it creates /tmp/{{ container_name }}_is_running"
   command: "docker inspect {{ container_name }} > /dev/null && echo 1>/tmp/{{ container_name }}_is_running  || echo '{{ container_name }} is not running'"
-
+  ignore_errors: yes
+   
 - stat: path="/tmp/{{ container_name }}_is_running"
   register: container_is_running
 
