@@ -161,7 +161,7 @@
         - "/usr/local/ec3:/usr/local/ec3"
         #published_ports:
         #- "0.0.0.0:8000:8000"
-        hostname: "{{ docker_container_name }}"
+        hostname: "{{ container_name }}"
         command: "service cluesd start && tail -f /var/log/clues2/clues2.log"
 
     when: clues_use_docker
