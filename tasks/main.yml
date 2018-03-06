@@ -86,7 +86,13 @@
 
   # Copy configuration files (it is nedeed because for docker installation because the role doesn't execute setup.py ) when clues_use_docker 
   - name: "Copy /tmp/clues-master/etc/ to /etc/clues2"
-    command: "cp -r /tmp/clues-master/etc/* /etc/clues2/"
+    copy:
+      src: /tmp/clues-master/etc/
+      dest: /etc/clues2
+      directory_mode: yes
+      remote_src: no
+      
+
     when: clues_use_docker
 
   # Configuring CLUES and IM
