@@ -135,9 +135,12 @@
 
   # DOCKER START
   - block:
+    - name: Create {{ clues_configuration_dir }} directory
+      file: path={{ clues_configuration_dir }} state=directory mode=755
+
     - name: "Copy /etc/clues2 to {{ clues_configuration_dir }}"
       copy:
-        src: /etc/clues2
+        src: /etc/clues2/
         dest: "{{ clues_configuration_dir }}"
         directory_mode: yes
         remote_src: no
