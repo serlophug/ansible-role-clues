@@ -11,4 +11,6 @@ galaxy_info:
   galaxy_tags:
     - clues
 
-dependencies: []
+dependencies:
+  - role: grycap.docker
+    when: clues_use_docker

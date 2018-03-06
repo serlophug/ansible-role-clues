@@ -13,7 +13,7 @@ clues_powermanager_class: cluesplugins.im
 
 clues_configuration_dir: /etc/clues2
 
-docker_installation: false
+clues_use_docker: false
 
 clues_image: grycap/clues2
 container_name: clues2

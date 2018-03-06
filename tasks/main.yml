@@ -9,8 +9,18 @@
 - stat: path={{CLUES_PATH}}
   register: clues_installed
 
+- name: "Remove /tmp/{{ container_name }}_is_running"
+  file: 
+    path: "/tmp/{{ container_name }}_is_running"
+    state: absent
+
+- name: "If container {{ container_name }} is running, it creates /tmp/{{ container_name }}_is_running"
+  command: "docker inspect {{ container_name }} > /dev/null && echo 1>/tmp/{{ container_name }}_is_running  || echo '{{ container_name }} is not running'"
+
+- stat: path="/tmp/{{ container_name }}_is_running"
+  register: container_is_running
+
 - block:
-  # COMMON INSTALLATION
   - name: Create EC3 directory
     file: path=/usr/local/ec3 state=directory mode=755
 
@@ -49,7 +59,7 @@
     - clues
     - cpyutils  
 
-  # Install CLUES and dependencies
+  # Install CLUES and dependencies when not clues_use_docker 
   - block:  
     - name: Include "{{ansible_os_family}}" CLUES2 requirements
       include: "{{ansible_os_family}}.yml"
@@ -71,23 +81,23 @@
       command: systemctl stop cluesd
       ignore_errors: yes
 
-    when: not docker_installation
+    when: not clues_use_docker
 
-  # Copy configuration files (it is nedeed because for docker installation because the role doesn't execute setup.py )
-  - name: "Copy /tmp/clues-master/etc/ to {{ clues_configuration_dir }}"
-    command: "cp -r /tmp/clues-master/etc/ {{ clues_configuration_dir }}"
-    when: docker_installation
+  # Copy configuration files (it is nedeed because for docker installation because the role doesn't execute setup.py ) when clues_use_docker 
+  - name: "Copy /tmp/clues-master/etc/ to /etc/clues2"
+    command: "cp -r /tmp/clues-master/etc/ /etc/clues2"
+    when: clues_use_docker
 
   # Configuring CLUES and IM
   - name: Set CLUES2 folder rights
-    file: path={{ clues_configuration_dir }} state=directory mode=755
+    file: path=/etc/clues2 state=directory mode=755
 
   - name: Create CLUES2 config file
-    copy: src={{ clues_configuration_dir }}/clues2.cfg-full-example dest={{ clues_configuration_dir }}/clues2.cfg force=no
-    notify: restart cluesd
+    copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no
+    #notify: restart cluesd
 
   - name: Set CLUES2 config file values
-    ini_file: dest={{ clues_configuration_dir }}/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
+    ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
     with_items:
       - { section: 'general', option: 'POWERMANAGER_CLASS', value: '{{clues_powermanager_class}}' }
       - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
@@ -103,11 +113,11 @@
     #notify: restart cluesd
 
   - name: Create IM plugin configuration file for CLUES2
-    copy: src={{ clues_configuration_dir }}/conf.d/plugin-im.cfg-example dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg force=no
+    copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no
     #notify: restart cluesd
 
   - name: Set IM plugin configuration file values
-    ini_file: dest={{ clues_configuration_dir }}/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
+    ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
     with_items:
       - { option: 'IM_VIRTUAL_CLUSTER_AUTH_DATA_FILE', value: '/usr/local/ec3/auth.dat' }
       - { option: 'IM_VIRTUAL_CLUSTER_XMLRPC', value: '{{ IM_VIRTUAL_CLUSTER_XMLRPC }}' }
@@ -120,6 +130,9 @@
 
   # DOCKER START
   - block:
+    - name: "Move /etc/clues2 to {{ clues_configuration_dir }}"
+      command: "mv /etc/clues2 {{ clues_configuration_dir }}"
+
     - name: Install dependencies for docker management
       pip: name=docker-py
     
@@ -139,7 +152,7 @@
         hostname: "{{ docker_container_name }}"
         command: "service cluesd start && tail -f /var/log/clues2/clues2.log"
 
-    when: docker_installation
+    when: clues_use_docker
 
   # NORMAL START
   - block:  
@@ -150,6 +163,6 @@
     - name: Kill and restart clues service (Centos 7 only)
       shell: pgrep cluesserver | xargs kill && service cluesd start
       when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
-    when: not docker_installation
+    when: not clues_use_docker
     
-  when: not clues_installed.stat.exists
+  when: (not clues_use_docker and not clues_installed.stat.exists) or (clues_use_docker and container_is_running.stat.exists)
