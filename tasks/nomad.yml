@@ -1,5 +1,6 @@
 - name: Pip install urllib3
   pip: name=urllib3
+  when: not clues_use_docker 
 
 - name: "Edit /etc/hosts file"
   shell: |
