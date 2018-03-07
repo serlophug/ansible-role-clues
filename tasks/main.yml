@@ -28,6 +28,9 @@
   - name: Create /etc/clues2 directory
     file: path=/etc/clues2 state=directory mode=755
 
+  - name: Create {{ clues_log_dir }} directory
+    file: path={{ clues_log_dir }} state=directory mode=755
+
   - name: Create auth file
     copy:
       dest: /usr/local/ec3/auth.dat
@@ -138,6 +141,9 @@
     - name: Create {{ clues_configuration_dir }} directory
       file: path={{ clues_configuration_dir }} state=directory mode=755
 
+    - name: Create {{ clues_configuration_dir }} directory
+      file: path={{ clues_configuration_dir }} state=directory mode=755
+
     - name: "Copy /etc/clues2 to {{ clues_configuration_dir }}"
       copy:
         src: /etc/clues2/
@@ -159,10 +165,11 @@
         volumes:
         - "{{ clues_configuration_dir }}:/etc/clues2"
         - "/usr/local/ec3:/usr/local/ec3"
+        - "{{ clues_log_dir }}:/var/log/clues2"
         #published_ports:
         #- "0.0.0.0:8000:8000"
         hostname: "{{ container_name }}"
-        command: "service cluesd start && tail -f /var/log/clues2/clues2.log"
+        command: "service cluesd start && bash"
 
     when: clues_use_docker
 

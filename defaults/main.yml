@@ -12,7 +12,7 @@ auth: auth.dat
 clues_powermanager_class: cluesplugins.im
 
 clues_configuration_dir: /etc/clues2
-
+clues_log_dir: /var/log/clues2
 clues_use_docker: false
 
 clues_image: grycap/clues2
