@@ -2,7 +2,9 @@
 # handler for the clues daemon
 - name: start cluesd
   command: service cluesd start
+  when: not clues_use_docker 
   #service: name=cluesd state=restarted
 
 - name: restart cluesd
   command: service cluesd restart
+  when: not clues_use_docker 

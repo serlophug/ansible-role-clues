@@ -20,132 +20,132 @@
 
 # CLUES NOMAD configuration
 - ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.nomad
-  #notify: restart cluesd
+  notify: restart cluesd
 - copy: src=/etc/clues2/conf.d/plugin-nomad.cfg-example dest=/etc/clues2/conf.d/plugin-nomad.cfg force=no
-  #notify: restart cluesd
+  notify: restart cluesd
 
 
 - name: Set NOMAD_NODES_LIST_CLUES value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_NODES_LIST_CLUES value={{NOMAD_NODES_LIST_CLUES}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_NODES_LIST_CLUES is defined
   
 - name: Set NOMAD_DEFAULT_CPUS_PER_NODE value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_DEFAULT_CPUS_PER_NODE value={{NOMAD_DEFAULT_CPUS_PER_NODE}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_DEFAULT_CPUS_PER_NODE is defined
 - name: Set NOMAD_DEFAULT_MEMORY_PER_NODE value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_DEFAULT_MEMORY_PER_NODE value={{NOMAD_DEFAULT_MEMORY_PER_NODE}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_DEFAULT_MEMORY_PER_NODE is defined
 
 
 # NOMAD
 - name: Set NOMAD_SERVER value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_SERVER value={{NOMAD_SERVER}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_SERVER is defined
 
 - name: Set NOMAD_PRIVATE_HTTP_PORT value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_PRIVATE_HTTP_PORT value={{NOMAD_PRIVATE_HTTP_PORT}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_PRIVATE_HTTP_PORT is defined
 
 - name: Set NOMAD_STATE_OFF value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_STATE_OFF value={{NOMAD_STATE_OFF}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_STATE_OFF is defined
 
 - name: Set NOMAD_STATE_ON value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_STATE_ON value={{NOMAD_STATE_ON}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_STATE_ON is defined
 
 # API VARIABLES
 - name: Set NOMAD_HEADERS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_HEADERS value={{NOMAD_HEADERS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_HEADERS is defined
 
 - name: Set NOMAD_API_VERSION value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_VERSION value={{NOMAD_API_VERSION}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_VERSION is defined
 
 - name: Set NOMAD_API_URL_GET_SERVERS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_SERVERS value={{NOMAD_API_URL_GET_SERVERS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_SERVERS is defined
 
 - name: Set NOMAD_API_URL_GET_CLIENTS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENTS value={{NOMAD_API_URL_GET_CLIENTS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_CLIENTS is defined
 
 - name: Set NOMAD_API_URL_GET_CLIENT_INFO value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENT_INFO value={{NOMAD_API_URL_GET_CLIENT_INFO}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_CLIENT_INFO is defined
 
 - name: Set NOMAD_API_URL_GET_CLIENT_STATUS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENT_STATUS value={{NOMAD_API_URL_GET_CLIENT_STATUS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_CLIENT_STATUS is defined
 
 - name: Set NOMAD_API_URL_GET_CLIENT_ALLOCATIONS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_CLIENT_ALLOCATIONS value={{NOMAD_API_URL_GET_CLIENT_ALLOCATIONS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_CLIENT_ALLOCATIONS is defined
 
 - name: Set NOMAD_API_URL_GET_ALLOCATIONS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_ALLOCATIONS value={{NOMAD_API_URL_GET_ALLOCATIONS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_ALLOCATIONS is defined
   
 - name: Set NOMAD_API_URL_GET_SERVERS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_SERVERS value={{NOMAD_API_URL_GET_SERVERS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_SERVERS is defined
 
 - name: Set NOMAD_API_URL_GET_JOBS value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_JOBS value={{NOMAD_API_URL_GET_JOBS}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_JOBS is defined
 
 - name: Set NOMAD_API_URL_GET_JOBS_INFO value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_JOBS_INFO value={{NOMAD_API_URL_GET_JOBS_INFO}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_JOBS_INFO is defined
 
 - name: Set NOMAD_API_URL_GET_ALLOCATION_INFO value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_API_URL_GET_ALLOCATION_INFO value={{NOMAD_API_URL_GET_ALLOCATION_INFO}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_API_URL_GET_ALLOCATION_INFO is defined
 
 - name: Set MAX_RETRIES value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=MAX_RETRIES value={{MAX_RETRIES}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: MAX_RETRIES is defined
 
   # AUTH
 - name: Set NOMAD_ACL_TOKEN value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_ACL_TOKEN value={{NOMAD_ACL_TOKEN}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_ACL_TOKEN is defined
 
 - name: Set NOMAD_AUTH_DATA value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_AUTH_DATA value={{NOMAD_AUTH_DATA}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_AUTH_DATA is defined
 
 
 # QUEUES
 - name: Set NOMAD_QUEUES value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_QUEUES value={{NOMAD_QUEUES}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_QUEUES is defined
 
 - name: Set NOMAD_QUEUES_OJPN value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_QUEUES_OJPN value={{NOMAD_QUEUES_OJPN}}
-  #notify: restart cluesd
+  notify: restart cluesd
   when: NOMAD_QUEUES_OJPN is defined

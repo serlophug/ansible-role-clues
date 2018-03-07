@@ -10,11 +10,13 @@ vnode_prefix: wn
 auth: auth.dat
 # Class to use as power manager (POWERMANAGER_CLASS)
 clues_powermanager_class: cluesplugins.im
-
+# Directories of clues files
 clues_configuration_dir: /etc/clues2
 clues_log_dir: /var/log/clues2
+# Only works in Nomad, Kubernetes and Mesos
 clues_use_docker: false
-
+# Docker information
 clues_image: grycap/clues2
 container_name: clues2
+# clues2.cfg variables 
 IM_VIRTUAL_CLUSTER_XMLRPC: http://localhost:8899
